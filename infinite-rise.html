@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>The Infinite Rise — Ascending Fractal Experience</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@300;400&family=Cinzel:wght@300;400;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap');
+
+:root {
+  --gold: #d4a94a;
+  --gold-light: #f5d07a;
+  --gold-pale: #fdf3d8;
+  --white: #fffef8;
+  --deep: #04060a;
+  --mid: #0a0d14;
+  --glow: rgba(212,169,74,0.4);
+  --glow-strong: rgba(245,208,122,0.7);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { width:100%; height:100%; overflow:hidden; background:var(--deep); }
+
+body {
+  font-family: 'Cinzel', serif;
+  color: var(--white);
+  cursor: default;
+}
+
+/* ── CANVAS LAYER ── */
+#canvas-bg {
+  position:fixed; inset:0; z-index:1;
+}
+
+/* ── OVERLAY LAYERS ── */
+#vignette {
+  position:fixed; inset:0; z-index:2; pointer-events:none;
+  background: radial-gradient(ellipse 70% 70% at 50% 50%,
+    transparent 30%, rgba(4,6,10,0.5) 70%, rgba(4,6,10,0.92) 100%);
+}
+#grain {
+  position:fixed; inset:0; z-index:3; pointer-events:none; opacity:0.035;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ── TITLE SCREEN ── */
+#title-screen {
+  position:fixed; inset:0; z-index:20;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:0;
+  background: radial-gradient(ellipse at 50% 60%, rgba(20,15,5,0.95) 0%, rgba(4,6,10,0.98) 100%);
+  transition: opacity 2s ease;
+}
+#title-screen.fade-out { opacity:0; pointer-events:none; }
+
+.title-eyebrow {
+  font-family:'Cormorant Garamond', serif;
+  font-style:italic; font-weight:300;
+  font-size: clamp(0.75rem, 2vw, 1rem);
+  letter-spacing:0.5em;
+  color: rgba(212,169,74,0.5);
+  text-transform:uppercase;
+  margin-bottom:20px;
+  animation: fadeInUp 1.5s ease both;
+}
+
+.title-main {
+  font-family:'Cinzel Decorative', serif;
+  font-weight:300;
+  font-size: clamp(2.5rem, 7vw, 6rem);
+  letter-spacing:0.12em;
+  text-align:center;
+  line-height:1.1;
+  background: linear-gradient(170deg, #fff9e6 0%, #f5d07a 35%, #d4a94a 65%, #8b6320 100%);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+  filter: drop-shadow(0 0 40px rgba(212,169,74,0.5));
+  animation: fadeInUp 1.5s 0.3s ease both;
+}
+
+.title-sub {
+  font-family:'Cormorant Garamond', serif;
+  font-style:italic; font-weight:300;
+  font-size: clamp(1rem, 2.5vw, 1.5rem);
+  letter-spacing:0.25em;
+  color: rgba(245,208,122,0.6);
+  margin-top:16px;
+  animation: fadeInUp 1.5s 0.6s ease both;
+}
+
+.title-divider {
+  width:200px; height:1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  margin:32px auto;
+  animation: fadeInUp 1.5s 0.9s ease both;
+}
+
+.sound-selector {
+  display:grid; grid-template-columns: repeat(3, 1fr);
+  gap:10px; max-width:560px; width:90%;
+  animation: fadeInUp 1.5s 1.2s ease both;
+  margin-bottom:32px;
+}
+
+.sound-btn {
+  padding:12px 8px;
+  background: rgba(212,169,74,0.04);
+  border: 1px solid rgba(212,169,74,0.18);
+  color: rgba(245,208,122,0.6);
+  font-family:'Cinzel', serif;
+  font-size: clamp(0.55rem, 1.2vw, 0.7rem);
+  letter-spacing:0.15em;
+  text-transform:uppercase;
+  cursor:pointer;
+  transition: all 0.3s ease;
+  position:relative; overflow:hidden;
+}
+.sound-btn::before {
+  content:''; position:absolute; inset:0;
+  background: linear-gradient(135deg, rgba(212,169,74,0.08), transparent);
+  opacity:0; transition:opacity 0.3s;
+}
+.sound-btn:hover { border-color:rgba(212,169,74,0.5); color:rgba(245,208,122,0.9); }
+.sound-btn:hover::before { opacity:1; }
+.sound-btn.active {
+  border-color: var(--gold);
+  color: var(--gold-light);
+  background: rgba(212,169,74,0.08);
+  box-shadow: 0 0 20px rgba(212,169,74,0.15), inset 0 0 20px rgba(212,169,74,0.05);
+}
+.sound-btn .icon { display:block; font-size:1.3rem; margin-bottom:4px; }
+
+.fractal-selector {
+  display:flex; gap:10px; flex-wrap:wrap; justify-content:center;
+  max-width:560px; width:90%;
+  animation: fadeInUp 1.5s 1.4s ease both;
+  margin-bottom:36px;
+}
+.frac-btn {
+  padding:8px 18px;
+  background: rgba(212,169,74,0.03);
+  border: 1px solid rgba(212,169,74,0.15);
+  color: rgba(245,208,122,0.5);
+  font-family:'Cinzel', serif; font-size:0.6rem;
+  letter-spacing:0.2em; text-transform:uppercase;
+  cursor:pointer; transition:all 0.3s;
+}
+.frac-btn:hover { border-color:rgba(212,169,74,0.4); color:rgba(245,208,122,0.8); }
+.frac-btn.active { border-color:var(--gold); color:var(--gold-light); background:rgba(212,169,74,0.07); }
+
+.begin-btn {
+  padding:18px 64px;
+  background: transparent;
+  border: 1px solid rgba(212,169,74,0.4);
+  color: var(--gold-light);
+  font-family:'Cinzel', serif;
+  font-size: clamp(0.7rem, 1.5vw, 0.9rem);
+  letter-spacing:0.4em; text-transform:uppercase;
+  cursor:pointer;
+  transition:all 0.4s ease;
+  position:relative; overflow:hidden;
+  animation: fadeInUp 1.5s 1.6s ease both;
+}
+.begin-btn::after {
+  content:''; position:absolute; inset:0;
+  background: linear-gradient(90deg, transparent, rgba(212,169,74,0.07), transparent);
+  transform:translateX(-100%); transition:transform 0.6s ease;
+}
+.begin-btn:hover { border-color:var(--gold); box-shadow: 0 0 40px rgba(212,169,74,0.2); }
+.begin-btn:hover::after { transform:translateX(100%); }
+
+.selector-label {
+  font-size:0.55rem; letter-spacing:0.35em;
+  color:rgba(212,169,74,0.35); text-transform:uppercase;
+  margin-bottom:10px;
+  animation: fadeInUp 1.5s 1.1s ease both;
+  text-align:center;
+}
+
+/* ── MAIN HUD ── */
+#hud {
+  position:fixed; inset:0; z-index:10;
+  pointer-events:none;
+  opacity:0; transition:opacity 1.5s ease;
+}
+#hud.visible { opacity:1; }
+
+/* Top bar */
+.hud-top {
+  position:absolute; top:0; left:0; right:0;
+  padding:24px 40px;
+  display:flex; align-items:center; justify-content:space-between;
+  background: linear-gradient(180deg, rgba(4,6,10,0.8) 0%, transparent 100%);
+}
+.hud-title {
+  font-family:'Cinzel Decorative', serif; font-weight:300;
+  font-size: clamp(0.7rem, 1.5vw, 0.95rem);
+  letter-spacing:0.35em;
+  background: linear-gradient(90deg, var(--gold-pale), var(--gold));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+}
+.hud-voice-name {
+  font-family:'Cormorant Garamond', serif; font-style:italic;
+  font-size: clamp(0.75rem, 1.5vw, 1rem);
+  color: rgba(212,169,74,0.65);
+  letter-spacing:0.15em;
+}
+.hud-time {
+  font-size:0.6rem; letter-spacing:0.25em;
+  color:rgba(212,169,74,0.4);
+}
+
+/* Bottom bar */
+.hud-bottom {
+  position:absolute; bottom:0; left:0; right:0;
+  padding:20px 40px 32px;
+  background: linear-gradient(0deg, rgba(4,6,10,0.85) 0%, transparent 100%);
+  display:flex; align-items:flex-end; gap:20px;
+}
+
+/* Progress bar */
+.progress-track {
+  flex:1; height:2px;
+  background: rgba(212,169,74,0.1);
+  position:relative; border-radius:2px;
+  margin-bottom:8px;
+}
+.progress-fill {
+  height:100%; border-radius:2px;
+  background: linear-gradient(90deg, rgba(212,169,74,0.4), var(--gold-light));
+  width:0%; transition:width 0.5s linear;
+  box-shadow: 0 0 8px var(--glow);
+  position:relative;
+}
+.progress-fill::after {
+  content:''; position:absolute; right:-3px; top:-3px;
+  width:8px; height:8px; border-radius:50%;
+  background:var(--gold-light);
+  box-shadow: 0 0 12px var(--glow-strong);
+}
+
+/* Stats row */
+.stats-row {
+  display:flex; gap:32px; align-items:center;
+  margin-bottom:12px;
+}
+.stat-item { text-align:center; }
+.stat-label { font-size:0.5rem; letter-spacing:0.3em; color:rgba(212,169,74,0.35); text-transform:uppercase; margin-bottom:3px; }
+.stat-value { font-family:'Cormorant Garamond', serif; font-size:1rem; color:rgba(245,208,122,0.8); }
+
+/* Controls */
+.controls-row {
+  pointer-events:all;
+  display:flex; gap:10px;
+}
+.ctrl-btn {
+  padding:8px 20px;
+  background:transparent;
+  border:1px solid rgba(212,169,74,0.2);
+  color:rgba(212,169,74,0.5);
+  font-family:'Cinzel', serif; font-size:0.55rem;
+  letter-spacing:0.25em; text-transform:uppercase;
+  cursor:pointer; transition:all 0.3s;
+}
+.ctrl-btn:hover { border-color:rgba(212,169,74,0.6); color:var(--gold-light); }
+.ctrl-btn.active { border-color:var(--gold); color:var(--gold-light); background:rgba(212,169,74,0.07); }
+
+/* Voice switcher */
+.voice-switcher {
+  pointer-events:all;
+  display:flex; gap:6px; flex-wrap:wrap;
+  max-width:300px;
+}
+.vsw-btn {
+  padding:5px 10px;
+  background:transparent;
+  border:1px solid rgba(212,169,74,0.12);
+  color:rgba(212,169,74,0.35);
+  font-family:'Cinzel', serif; font-size:0.45rem;
+  letter-spacing:0.15em; text-transform:uppercase;
+  cursor:pointer; transition:all 0.25s;
+}
+.vsw-btn:hover { border-color:rgba(212,169,74,0.4); color:rgba(212,169,74,0.7); }
+.vsw-btn.active { border-color:var(--gold); color:var(--gold-light); background:rgba(212,169,74,0.06); }
+
+/* Right sidebar */
+.hud-right {
+  position:absolute; right:32px; top:50%; transform:translateY(-50%);
+  display:flex; flex-direction:column; align-items:center; gap:8px;
+}
+.altitude-track {
+  width:2px; height:220px;
+  background:rgba(212,169,74,0.08); border-radius:2px;
+  position:relative; overflow:visible;
+}
+.altitude-fill {
+  position:absolute; bottom:0; left:0; width:100%;
+  background: linear-gradient(0deg, rgba(212,169,74,0.3), var(--gold-light));
+  border-radius:2px; height:0%;
+  transition:height 0.5s linear;
+  box-shadow: 0 0 6px var(--glow);
+}
+.altitude-text {
+  font-size:0.45rem; letter-spacing:0.3em;
+  color:rgba(212,169,74,0.3); text-transform:uppercase;
+  writing-mode:vertical-rl; text-orientation:mixed;
+}
+
+/* Harmonic ring visualizer */
+#harmonic-ring {
+  position:fixed; bottom:80px; right:80px;
+  width:80px; height:80px; z-index:11;
+  pointer-events:none;
+  opacity:0; transition:opacity 1s;
+}
+#harmonic-ring.visible { opacity:0.6; }
+
+/* Particle overlay */
+#particle-canvas {
+  position:fixed; inset:0; z-index:6; pointer-events:none;
+}
+
+/* Transition overlay */
+#transition-overlay {
+  position:fixed; inset:0; z-index:50;
+  background:var(--gold-pale); opacity:0; pointer-events:none;
+  transition:opacity 3s ease;
+}
+#transition-overlay.show { opacity:1; }
+
+/* Ascent complete screen */
+#complete-screen {
+  position:fixed; inset:0; z-index:60;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  background: radial-gradient(ellipse at 50% 50%, rgba(253,243,216,0.97), rgba(245,208,122,0.95));
+  opacity:0; pointer-events:none; transition:opacity 2s 1s ease;
+}
+#complete-screen.show { opacity:1; pointer-events:all; }
+.complete-title {
+  font-family:'Cinzel Decorative', serif; font-weight:300;
+  font-size: clamp(2rem, 5vw, 4rem);
+  color: rgba(80,50,10,0.9);
+  letter-spacing:0.2em; text-align:center;
+  margin-bottom:16px;
+}
+.complete-sub {
+  font-family:'Cormorant Garamond', serif; font-style:italic;
+  font-size: clamp(1rem, 2vw, 1.4rem);
+  color:rgba(120,80,20,0.7); letter-spacing:0.2em;
+  margin-bottom:40px;
+}
+.restart-btn {
+  padding:14px 48px;
+  background:transparent;
+  border:1px solid rgba(120,80,20,0.4);
+  color:rgba(100,60,10,0.8);
+  font-family:'Cinzel', serif; font-size:0.75rem;
+  letter-spacing:0.35em; text-transform:uppercase;
+  cursor:pointer; transition:all 0.3s;
+}
+.restart-btn:hover { border-color:rgba(120,80,20,0.8); color:rgba(80,40,5,1); }
+
+@keyframes fadeInUp {
+  from { opacity:0; transform:translateY(20px); }
+  to { opacity:1; transform:translateY(0); }
+}
+@keyframes shimmer {
+  0%,100% { opacity:0.3; } 50% { opacity:0.7; }
+}
+@keyframes particleFloat {
+  0% { transform:translateY(0) scale(1); opacity:0.6; }
+  100% { transform:translateY(-100vh) scale(0.3); opacity:0; }
+}
+</style>
+</head>
+<body>
+
+<canvas id="canvas-bg"></canvas>
+<canvas id="particle-canvas"></canvas>
+<div id="vignette"></div>
+<div id="grain"></div>
+<div id="transition-overlay"></div>
+
+<!-- TITLE SCREEN -->
+<div id="title-screen">
+  <div class="title-eyebrow">A Fractal Sound Experience</div>
+  <div class="title-main">The Infinite Rise</div>
+  <div class="title-sub">where mathematics ascends into music</div>
+  <div class="title-divider"></div>
+
+  <div class="selector-label">Select Your Sound Voice</div>
+  <div class="sound-selector">
+    <button class="sound-btn active" data-voice="choir" onclick="selectVoice('choir',this)">
+      <span class="icon">✦</span>Angelic Choir
+    </button>
+    <button class="sound-btn" data-voice="organ" onclick="selectVoice('organ',this)">
+      <span class="icon">♜</span>Cathedral Organ
+    </button>
+    <button class="sound-btn" data-voice="piano" onclick="selectVoice('piano',this)">
+      <span class="icon">♪</span>Crystal Piano
+    </button>
+    <button class="sound-btn" data-voice="bowls" onclick="selectVoice('bowls',this)">
+      <span class="icon">◎</span>Tibetan Bowls
+    </button>
+    <button class="sound-btn" data-voice="strings" onclick="selectVoice('strings',this)">
+      <span class="icon">〜</span>Orch. Strings
+    </button>
+    <button class="sound-btn" data-voice="synth" onclick="selectVoice('synth',this)">
+      <span class="icon">◈</span>Ethereal Synth
+    </button>
+  </div>
+
+  <div class="selector-label" style="margin-top:8px">Select Fractal Type</div>
+  <div class="fractal-selector">
+    <button class="frac-btn active" data-frac="mandelbrot" onclick="selectFractal('mandelbrot',this)">Mandelbrot</button>
+    <button class="frac-btn" data-frac="burningship" onclick="selectFractal('burningship',this)">Burning Ship</button>
+    <button class="frac-btn" data-frac="feather" onclick="selectFractal('feather',this)">Feather</button>
+    <button class="frac-btn" data-frac="tricorn" onclick="selectFractal('tricorn',this)">Tricorn</button>
+    <button class="frac-btn" data-frac="phoenix" onclick="selectFractal('phoenix',this)">Phoenix</button>
+  </div>
+
+  <button class="begin-btn" onclick="startExperience()">Begin the Ascent</button>
+</div>
+
+<!-- MAIN HUD -->
+<div id="hud">
+  <div class="hud-top">
+    <div class="hud-title">The Infinite Rise</div>
+    <div class="hud-voice-name" id="hud-voice-label">Angelic Choir</div>
+    <div class="hud-time" id="hud-time">0:00</div>
+  </div>
+
+  <div class="hud-right">
+    <div class="altitude-text">Ascent</div>
+    <div class="altitude-track">
+      <div class="altitude-fill" id="altitude-fill"></div>
+    </div>
+    <div class="altitude-text" id="pct-label">0%</div>
+  </div>
+
+  <div class="hud-bottom">
+    <div style="flex:1">
+      <div class="stats-row">
+        <div class="stat-item"><div class="stat-label">Zoom</div><div class="stat-value" id="stat-zoom">1×</div></div>
+        <div class="stat-item"><div class="stat-label">Harmony</div><div class="stat-value" id="stat-harm">—</div></div>
+        <div class="stat-item"><div class="stat-label">Fractal</div><div class="stat-value" id="stat-frac">Mandelbrot</div></div>
+        <div class="stat-item"><div class="stat-label">Depth</div><div class="stat-value" id="stat-depth">∞</div></div>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:14px;">
+        <div class="controls-row">
+          <button class="ctrl-btn" id="pause-btn" onclick="togglePause()">Pause</button>
+          <button class="ctrl-btn" id="restart-btn2" onclick="restartExperience()">Restart</button>
+          <button class="ctrl-btn" id="speed-btn" onclick="cycleSpeed()">Speed: 1×</button>
+        </div>
+        <div class="voice-switcher" id="voice-switcher">
+          <button class="vsw-btn active" data-voice="choir" onclick="switchVoiceLive('choir',this)">Choir</button>
+          <button class="vsw-btn" data-voice="organ" onclick="switchVoiceLive('organ',this)">Organ</button>
+          <button class="vsw-btn" data-voice="piano" onclick="switchVoiceLive('piano',this)">Piano</button>
+          <button class="vsw-btn" data-voice="bowls" onclick="switchVoiceLive('bowls',this)">Bowls</button>
+          <button class="vsw-btn" data-voice="strings" onclick="switchVoiceLive('strings',this)">Strings</button>
+          <button class="vsw-btn" data-voice="synth" onclick="switchVoiceLive('synth',this)">Synth</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HARMONIC RING -->
+<canvas id="harmonic-ring"></canvas>
+
+<!-- COMPLETE SCREEN -->
+<div id="complete-screen">
+  <div class="complete-title">Ascent Complete</div>
+  <div class="complete-sub">you have risen through the infinite</div>
+  <button class="restart-btn" onclick="restartFull()">Begin Again</button>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+//  THE INFINITE RISE — Full Engine
+// ═══════════════════════════════════════════════════════════════
+
+const fractalCanvas = document.getElementById('canvas-bg');
+const pCanvas = document.getElementById('particle-canvas');
+const fracCtx = fractalCanvas.getContext('2d');
+const pCtx = pCanvas.getContext('2d');
+const hRing = document.getElementById('harmonic-ring');
+const hRingCtx = hRing.getContext('2d');
+
+let W, H;
+let running = false, paused = false;
+let audioCtx = null, masterGain = null, reverbNode = null, dryGain = null;
+let currentVoice = 'choir';
+let currentFractal = 'mandelbrot';
+let activeOscillators = [];
+let frame = 0, totalFrames = 0;
+let zoom = 0.0000008;
+let zoomSpeed = 1.0028;
+let speedMult = 1;
+let elapsedSecs = 0;
+let lastTime = 0;
+let animFrame = null;
+const MAX_FRAMES = 5000;
+
+// Fractal centers per type
+const FRACTAL_CONFIGS = {
+  mandelbrot:  { cx: -0.7269, cy:  0.1889, label: 'Mandelbrot' },
+  burningship: { cx: -1.7549, cy: -0.0281, label: 'Burning Ship' },
+  feather:     { cx: -0.6251, cy:  0.4239, label: 'Feather' },
+  tricorn:     { cx: -0.0806, cy:  0.6602, label: 'Tricorn' },
+  phoenix:     { cx:  0.5667, cy:  0.0000, label: 'Phoenix' },
+};
+
+const VOICE_LABELS = {
+  choir:'Angelic Choir', organ:'Cathedral Organ', piano:'Crystal Piano',
+  bowls:'Tibetan Bowls', strings:'Orch. Strings', synth:'Ethereal Synth'
+};
+
+const HARMONIES = ['C','E','G','B♭','C′','E′','G′','B♭′','C″','∞'];
+const BASE = 130.81; // C3
+// Chord ratios: C maj9 → C E G B D
+const RATIOS = [1, 1.25, 1.5, 1.875, 2, 2.5, 3, 3.75, 4];
+
+// ── RESIZE ───────────────────────────────────────────────────
+function resize() {
+  W = fractalCanvas.width = pCanvas.width = window.innerWidth;
+  H = fractalCanvas.height = pCanvas.height = window.innerHeight;
+  hRing.width = hRing.height = 90;
+  imageData = null;
+}
+window.addEventListener('resize', resize);
+resize();
+
+// ── FRACTAL MATH ─────────────────────────────────────────────
+let imageData = null;
+
+function iterate(type, cx, cy, maxI) {
+  let zx=0, zy=0, px=0, py=0, tmp, i=0;
+  switch(type) {
+    case 'mandelbrot':
+      while(i<maxI && zx*zx+zy*zy<4){
+        tmp=zx*zx-zy*zy+cx; zy=2*zx*zy+cy; zx=tmp; i++;
+      } break;
+    case 'burningship':
+      while(i<maxI && zx*zx+zy*zy<4){
+        tmp=zx*zx-zy*zy+cx; zy=Math.abs(2*zx*zy)+cy; zx=Math.abs(tmp); i++;
+      } break;
+    case 'feather':
+      // z = z^3/|z^3|*c + c  (approximation giving feather-like structures)
+      while(i<maxI && zx*zx+zy*zy<16){
+        let zx2=zx*zx, zy2=zy*zy;
+        let nx=zx*(zx2-3*zy2)+cx;
+        let ny=zy*(3*zx2-zy2)+cy;
+        let mag=Math.sqrt(nx*nx+ny*ny)||1;
+        zx=nx/mag+cx; zy=ny/mag+cy; i++;
+      } break;
+    case 'tricorn':
+      while(i<maxI && zx*zx+zy*zy<4){
+        tmp=zx*zx-zy*zy+cx; zy=-2*zx*zy+cy; zx=tmp; i++;
+      } break;
+    case 'phoenix':
+      while(i<maxI && zx*zx+zy*zy<4){
+        tmp=zx*zx-zy*zy+cx+0.5667*px;
+        let npy=2*zx*zy+cy+0.5*py;
+        px=zx; py=zy; zx=tmp; zy=npy; i++;
+      } break;
+  }
+  if(i===maxI) return -1;
+  const log2=Math.log(zx*zx+zy*zy)/2;
+  const nu=Math.log(log2/Math.log(2))/Math.log(2);
+  return i+1-nu;
+}
+
+function toColor(t, boost, fracType) {
+  if(t<0) return [0,0,0];
+  const n=(t%64)/64;
+  const b=boost;
+
+  // Each fractal has its own ascending palette
+  let r,g,bl;
+  if(fracType==='burningship') {
+    // Fiery: deep red → orange → gold → white
+    r = lerp(lerp(20,100,b), lerp(255,255,b), n);
+    g = lerp(lerp(2,30,b), lerp(100,220,b), n);
+    bl= lerp(lerp(0,0,b), lerp(30,180,b), n);
+  } else if(fracType==='feather') {
+    // Teal → cyan → white
+    r = lerp(lerp(0,40,b), lerp(120,255,b), n);
+    g = lerp(lerp(30,120,b), lerp(200,255,b), n);
+    bl= lerp(lerp(50,180,b), lerp(220,255,b), n);
+  } else if(fracType==='tricorn') {
+    // Purple → violet → pale rose
+    r = lerp(lerp(20,80,b), lerp(200,255,b), n);
+    g = lerp(lerp(0,20,b), lerp(60,200,b), n);
+    bl= lerp(lerp(40,160,b), lerp(220,255,b), n);
+  } else if(fracType==='phoenix') {
+    // Emerald → lime → gold
+    r = lerp(lerp(0,30,b), lerp(150,255,b), n);
+    g = lerp(lerp(40,160,b), lerp(220,255,b), n);
+    bl= lerp(lerp(10,20,b), lerp(50,150,b), n);
+  } else {
+    // Mandelbrot: indigo → violet → gold → white (default)
+    if(n<0.33){
+      let p=n/0.33;
+      r=lerp(lerp(10,60,b),lerp(80,200,b),p);
+      g=lerp(lerp(5,15,b),lerp(20,80,b),p);
+      bl=lerp(lerp(50,140,b),lerp(120,230,b),p);
+    } else if(n<0.66){
+      let p=(n-0.33)/0.33;
+      r=lerp(lerp(80,200,b),lerp(240,255,b),p);
+      g=lerp(lerp(20,80,b),lerp(160,220,b),p);
+      bl=lerp(lerp(120,230,b),lerp(60,120,b),p);
+    } else {
+      let p=(n-0.66)/0.34;
+      r=lerp(lerp(240,255,b),255,p);
+      g=lerp(lerp(160,220,b),255,p);
+      bl=lerp(lerp(60,120,b),lerp(200,255,b),p);
+    }
+  }
+  return [~~r,~~g,~~bl];
+}
+
+function lerp(a,b,t){ return a+(b-a)*Math.max(0,Math.min(1,t)); }
+
+function renderFractal(boost) {
+  if(!imageData||imageData.width!==W||imageData.height!==H)
+    imageData=fracCtx.createImageData(W,H);
+  const d=imageData.data;
+  const cfg=FRACTAL_CONFIGS[currentFractal];
+  const maxI=100+Math.floor(boost*100);
+  const scale=4.0/(zoom*Math.min(W,H));
+
+  // Skip pixels for performance (every other pixel, interpolate)
+  const step=2;
+  for(let py=0;py<H;py+=step){
+    for(let px=0;px<W;px+=step){
+      const cx=cfg.cx+(px-W/2)*scale;
+      const cy=cfg.cy+(py-H/2)*scale;
+      const t=iterate(currentFractal,cx,cy,maxI);
+      const [r,g,b]=toColor(t,boost,currentFractal);
+      for(let dy=0;dy<step&&py+dy<H;dy++){
+        for(let dx=0;dx<step&&px+dx<W;dx++){
+          const i=((py+dy)*W+(px+dx))*4;
+          d[i]=r; d[i+1]=g; d[i+2]=b; d[i+3]=255;
+        }
+      }
+    }
+  }
+  fracCtx.putImageData(imageData,0,0);
+}
+
+// ── PARTICLES ────────────────────────────────────────────────
+const particles=[];
+function spawnParticle(progress){
+  if(Math.random()>0.15) return;
+  particles.push({
+    x:Math.random()*W, y:H+10,
+    vx:(Math.random()-0.5)*0.5,
+    vy:-(0.3+Math.random()*1.2*(1+progress*2)),
+    size:Math.random()*2.5+0.5,
+    life:1, decay:0.003+Math.random()*0.004,
+    hue: 40+Math.random()*20
+  });
+}
+function drawParticles(){
+  pCtx.clearRect(0,0,W,H);
+  for(let i=particles.length-1;i>=0;i--){
+    const p=particles[i];
+    p.x+=p.vx; p.y+=p.vy; p.life-=p.decay;
+    if(p.life<=0||p.y<-10){ particles.splice(i,1); continue; }
+    pCtx.beginPath();
+    pCtx.arc(p.x,p.y,p.size,0,Math.PI*2);
+    pCtx.fillStyle=`hsla(${p.hue},80%,75%,${p.life*0.5})`;
+    pCtx.fill();
+  }
+}
+
+// ── HARMONIC RING ────────────────────────────────────────────
+function drawHarmonicRing(progress){
+  const c=hRingCtx; const sz=90; c.clearRect(0,0,sz,sz);
+  const n=Math.min(3+Math.floor(progress*6),9);
+  for(let i=0;i<n;i++){
+    const angle=(i/n)*Math.PI*2 - Math.PI/2 + frame*0.01;
+    const r=25+i*3;
+    const x=sz/2+Math.cos(angle)*r, y=sz/2+Math.sin(angle)*r;
+    c.beginPath(); c.arc(x,y,2.5-i*0.1,0,Math.PI*2);
+    c.fillStyle=`hsla(45,80%,${60+i*4}%,${0.6-i*0.05})`;
+    c.fill();
+  }
+  c.beginPath(); c.arc(sz/2,sz/2,30,0,Math.PI*2);
+  c.strokeStyle=`rgba(212,169,74,${0.1+progress*0.15})`;
+  c.lineWidth=0.5; c.stroke();
+}
+
+// ── AUDIO ENGINE ─────────────────────────────────────────────
+async function initAudio(){
+  audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+  masterGain=audioCtx.createGain();
+  masterGain.gain.setValueAtTime(0.001,audioCtx.currentTime);
+  masterGain.gain.linearRampToValueAtTime(0.4,audioCtx.currentTime+5);
+
+  reverbNode=await buildReverb(3.5);
+  dryGain=audioCtx.createGain(); dryGain.gain.value=0.35;
+  const wetGain=audioCtx.createGain(); wetGain.gain.value=0.65;
+
+  masterGain.connect(dryGain); dryGain.connect(audioCtx.destination);
+  masterGain.connect(reverbNode); reverbNode.connect(wetGain); wetGain.connect(audioCtx.destination);
+
+  buildVoice(currentVoice, 0);
+}
+
+async function buildReverb(secs){
+  const cv=audioCtx.createConvolver();
+  const r=audioCtx.sampleRate, len=r*secs;
+  const buf=audioCtx.createBuffer(2,len,r);
+  for(let c=0;c<2;c++){
+    const ch=buf.getChannelData(c);
+    for(let i=0;i<len;i++) ch[i]=(Math.random()*2-1)*Math.pow(1-i/len,2.2);
+  }
+  cv.buffer=buf; return cv;
+}
+
+function stopAllOscillators(){
+  activeOscillators.forEach(o=>{
+    try{ o.gain.gain.linearRampToValueAtTime(0,audioCtx.currentTime+0.8);
+    setTimeout(()=>{ try{o.osc.stop();}catch(e){} },900); }catch(e){}
+  });
+  activeOscillators=[];
+}
+
+function buildVoice(voice, progress){
+  stopAllOscillators();
+  const semRise=progress*12;
+  const mult=Math.pow(2,semRise/12);
+
+  switch(voice){
+    case 'choir':   buildChoir(mult); break;
+    case 'organ':   buildOrgan(mult); break;
+    case 'piano':   buildPiano(mult); break;
+    case 'bowls':   buildBowls(mult); break;
+    case 'strings': buildStrings(mult); break;
+    case 'synth':   buildSynth(mult); break;
+  }
+}
+
+// CHOIR — soft sine waves with vibrato and staggered entry
+function buildChoir(mult){
+  RATIOS.slice(0,6).forEach((r,i)=>{
+    setTimeout(()=>{
+      if(!running) return;
+      const osc=audioCtx.createOscillator();
+      const gn=audioCtx.createGain();
+      const vib=audioCtx.createOscillator();
+      const vg=audioCtx.createGain();
+      osc.type='sine';
+      osc.frequency.value=BASE*r*mult*(1+(Math.random()-0.5)*0.004);
+      vib.frequency.value=4.8+Math.random();
+      vg.gain.value=BASE*r*mult*0.004;
+      vib.connect(vg); vg.connect(osc.frequency);
+      gn.gain.setValueAtTime(0,audioCtx.currentTime);
+      gn.gain.linearRampToValueAtTime(0.1/RATIOS.length,audioCtx.currentTime+2);
+      osc.connect(gn); gn.connect(masterGain);
+      osc.start(); vib.start();
+      activeOscillators.push({osc,gain:gn,vib,vg,baseFreq:BASE*r,ratio:r});
+    },i*500);
+  });
+}
+
+// ORGAN — sawtooth with harmonics and slight detuning
+function buildOrgan(mult){
+  RATIOS.slice(0,5).forEach((r,i)=>{
+    setTimeout(()=>{
+      if(!running) return;
+      ['sawtooth','sawtooth'].forEach((type,j)=>{
+        const osc=audioCtx.createOscillator();
+        const gn=audioCtx.createGain();
+        osc.type=type;
+        osc.frequency.value=BASE*r*mult*(1+(j===1?0.003:0));
+        gn.gain.setValueAtTime(0,audioCtx.currentTime);
+        gn.gain.linearRampToValueAtTime(0.03/(RATIOS.length),audioCtx.currentTime+1.5);
+        osc.connect(gn); gn.connect(masterGain);
+        osc.start();
+        activeOscillators.push({osc,gain:gn,baseFreq:BASE*r,ratio:r});
+      });
+    },i*300);
+  });
+}
+
+// PIANO — short attack, long decay (triangle approximation)
+function buildPiano(mult){
+  const playNote=(freq,delay,vol)=>{
+    setTimeout(()=>{
+      if(!running) return;
+      const osc=audioCtx.createOscillator();
+      const gn=audioCtx.createGain();
+      osc.type='triangle';
+      osc.frequency.value=freq;
+      gn.gain.setValueAtTime(0,audioCtx.currentTime);
+      gn.gain.linearRampToValueAtTime(vol,audioCtx.currentTime+0.02);
+      gn.gain.exponentialRampToValueAtTime(vol*0.3,audioCtx.currentTime+0.8);
+      gn.gain.exponentialRampToValueAtTime(0.0001,audioCtx.currentTime+6);
+      osc.connect(gn); gn.connect(masterGain);
+      osc.start(); osc.stop(audioCtx.currentTime+6.5);
+      activeOscillators.push({osc,gain:gn,baseFreq:freq,ratio:freq/(BASE*mult)});
+    },delay);
+  };
+  // Arpeggio ascending
+  RATIOS.slice(0,8).forEach((r,i)=> playNote(BASE*r*mult, i*400, 0.15));
+  // Then sustain chord
+  setTimeout(()=>{
+    RATIOS.slice(0,5).forEach(r=> playNote(BASE*r*mult,0,0.08));
+    // Repeat arpeggio every 8 seconds
+    setInterval(()=>{
+      if(!running||paused) return;
+      RATIOS.slice(0,8).forEach((r,i)=> playNote(BASE*r*mult*(1+currentProgress*0.5),i*300,0.1));
+    },8000);
+  },3500);
+}
+
+// BOWLS — long sustain with slow beats
+function buildBowls(mult){
+  [1,1.5,2,2.5,3].forEach((r,i)=>{
+    setTimeout(()=>{
+      if(!running) return;
+      [0,-0.007,0.007].forEach(detune=>{
+        const osc=audioCtx.createOscillator();
+        const gn=audioCtx.createGain();
+        osc.type='sine';
+        osc.frequency.value=BASE*r*mult*(1+detune);
+        gn.gain.setValueAtTime(0,audioCtx.currentTime);
+        gn.gain.linearRampToValueAtTime(0.08,audioCtx.currentTime+1.5);
+        osc.connect(gn); gn.connect(masterGain);
+        osc.start();
+        activeOscillators.push({osc,gain:gn,baseFreq:BASE*r,ratio:r});
+      });
+    },i*800);
+  });
+}
+
+// STRINGS — filtered sawtooth with tremolo
+function buildStrings(mult){
+  RATIOS.slice(0,6).forEach((r,i)=>{
+    setTimeout(()=>{
+      if(!running) return;
+      const osc=audioCtx.createOscillator();
+      const filter=audioCtx.createBiquadFilter();
+      const trem=audioCtx.createOscillator();
+      const tremG=audioCtx.createGain();
+      const gn=audioCtx.createGain();
+      osc.type='sawtooth';
+      osc.frequency.value=BASE*r*mult;
+      filter.type='lowpass'; filter.frequency.value=800+r*200;
+      trem.frequency.value=5.5; tremG.gain.value=0.4;
+      trem.connect(tremG); tremG.connect(gn.gain);
+      gn.gain.setValueAtTime(0,audioCtx.currentTime);
+      gn.gain.linearRampToValueAtTime(0.07,audioCtx.currentTime+3);
+      osc.connect(filter); filter.connect(gn); gn.connect(masterGain);
+      osc.start(); trem.start();
+      activeOscillators.push({osc,gain:gn,trem,tremG,filter,baseFreq:BASE*r,ratio:r});
+    },i*600);
+  });
+}
+
+// SYNTH — filtered square + slow LFO sweep
+function buildSynth(mult){
+  RATIOS.slice(0,6).forEach((r,i)=>{
+    setTimeout(()=>{
+      if(!running) return;
+      const osc=audioCtx.createOscillator();
+      const filter=audioCtx.createBiquadFilter();
+      const lfo=audioCtx.createOscillator();
+      const lfoG=audioCtx.createGain();
+      const gn=audioCtx.createGain();
+      osc.type='square';
+      osc.frequency.value=BASE*r*mult;
+      filter.type='lowpass'; filter.frequency.value=300; filter.Q.value=6;
+      lfo.frequency.value=0.15+i*0.05;
+      lfoG.gain.value=400+i*100;
+      lfo.connect(lfoG); lfoG.connect(filter.frequency);
+      gn.gain.setValueAtTime(0,audioCtx.currentTime);
+      gn.gain.linearRampToValueAtTime(0.04,audioCtx.currentTime+2);
+      osc.connect(filter); filter.connect(gn); gn.connect(masterGain);
+      osc.start(); lfo.start();
+      activeOscillators.push({osc,gain:gn,lfo,lfoG,filter,baseFreq:BASE*r,ratio:r});
+    },i*400);
+  });
+}
+
+let currentProgress=0;
+function updateAudio(progress){
+  if(!audioCtx||activeOscillators.length===0) return;
+  currentProgress=progress;
+  const semRise=progress*12;
+  const mult=Math.pow(2,semRise/12);
+  activeOscillators.forEach(v=>{
+    if(!v.osc||!v.gain) return;
+    const nf=v.baseFreq*mult;
+    try{
+      v.osc.frequency.setTargetAtTime(nf,audioCtx.currentTime,0.5);
+      const vol=(0.07+progress*0.06)/(activeOscillators.length*0.5);
+      v.gain.gain.setTargetAtTime(vol,audioCtx.currentTime,0.8);
+    }catch(e){}
+  });
+}
+
+// ── MAIN LOOP ─────────────────────────────────────────────────
+function loop(ts){
+  if(!running||paused) return;
+  animFrame=requestAnimationFrame(loop);
+
+  if(lastTime&&ts){
+    const dt=Math.min((ts-lastTime)/1000,0.1);
+    elapsedSecs+=dt*speedMult;
+  }
+  lastTime=ts;
+
+  const progress=Math.min(totalFrames/MAX_FRAMES,1.0);
+
+  // Render fractal every 2 frames
+  if(frame%2===0) renderFractal(progress);
+
+  // Particles
+  spawnParticle(progress);
+  drawParticles();
+
+  // Harmonic ring
+  if(frame%3===0) drawHarmonicRing(progress);
+
+  // Zoom out
+  for(let s=0;s<speedMult;s++) zoom*=zoomSpeed;
+
+  // Audio update every 8 frames
+  if(frame%8===0) updateAudio(progress);
+
+  // HUD update every 5 frames
+  if(frame%5===0){
+    const zExp=Math.log10(zoom/0.0000008);
+    document.getElementById('stat-zoom').textContent=zoom<0.01?`e${zExp.toFixed(1)}`:`${zoom.toFixed(3)}×`;
+    document.getElementById('stat-harm').textContent=HARMONIES[Math.min(~~(progress*10),9)];
+    document.getElementById('stat-depth').textContent=`${~~(progress*100)}%`;
+    const mins=~~(elapsedSecs/60), secs=~~(elapsedSecs%60);
+    document.getElementById('hud-time').textContent=`${mins}:${secs.toString().padStart(2,'0')}`;
+    document.getElementById('progress-fill').style.width=(progress*100)+'%';
+    document.getElementById('altitude-fill').style.height=(progress*100)+'%';
+    document.getElementById('pct-label').textContent=~~(progress*100)+'%';
+  }
+
+  frame++; totalFrames+=speedMult;
+
+  if(totalFrames>=MAX_FRAMES) endExperience();
+}
+
+// ── UI ACTIONS ───────────────────────────────────────────────
+let selectedVoice='choir';
+let selectedFractal='mandelbrot';
+
+function selectVoice(v,btn){
+  selectedVoice=v;
+  document.querySelectorAll('.sound-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function selectFractal(f,btn){
+  selectedFractal=f;
+  document.querySelectorAll('.frac-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function startExperience(){
+  currentVoice=selectedVoice;
+  currentFractal=selectedFractal;
+  zoom=0.0000008; frame=0; totalFrames=0; elapsedSecs=0; lastTime=0;
+
+  const ts=document.getElementById('title-screen');
+  ts.classList.add('fade-out');
+  setTimeout(()=>{ ts.style.display='none'; },2000);
+
+  document.getElementById('hud').classList.add('visible');
+  document.getElementById('harmonic-ring').classList.add('visible');
+  document.getElementById('stat-frac').textContent=FRACTAL_CONFIGS[currentFractal].label;
+  document.getElementById('hud-voice-label').textContent=VOICE_LABELS[currentVoice];
+  updateVoiceSwitcher(currentVoice);
+
+  initAudio().then(()=>{
+    running=true; paused=false;
+    requestAnimationFrame(loop);
+  });
+}
+
+function switchVoiceLive(v,btn){
+  if(!running) return;
+  currentVoice=v;
+  document.getElementById('hud-voice-label').textContent=VOICE_LABELS[v];
+  updateVoiceSwitcher(v);
+  buildVoice(v, currentProgress);
+}
+
+function updateVoiceSwitcher(v){
+  document.querySelectorAll('.vsw-btn').forEach(b=>{
+    b.classList.toggle('active', b.dataset.voice===v);
+  });
+}
+
+let speedLevels=[1,2,4], speedIdx=0;
+function cycleSpeed(){
+  speedIdx=(speedIdx+1)%speedLevels.length;
+  speedMult=speedLevels[speedIdx];
+  document.getElementById('speed-btn').textContent=`Speed: ${speedMult}×`;
+}
+
+function togglePause(){
+  paused=!paused;
+  document.getElementById('pause-btn').textContent=paused?'Resume':'Pause';
+  if(audioCtx){ paused?audioCtx.suspend():audioCtx.resume(); }
+  if(!paused){ lastTime=0; requestAnimationFrame(loop); }
+}
+
+function endExperience(){
+  running=false;
+  if(masterGain) masterGain.gain.linearRampToValueAtTime(0,audioCtx.currentTime+5);
+  document.getElementById('transition-overlay').classList.add('show');
+  setTimeout(()=>document.getElementById('complete-screen').classList.add('show'),2000);
+}
+
+function restartExperience(){
+  zoom=0.0000008; frame=0; totalFrames=0; elapsedSecs=0; lastTime=0;
+  particles.length=0;
+  if(paused){ paused=false; document.getElementById('pause-btn').textContent='Pause'; }
+  speedIdx=0; speedMult=1; document.getElementById('speed-btn').textContent='Speed: 1×';
+  if(audioCtx) audioCtx.resume();
+  buildVoice(currentVoice,0);
+  running=true;
+  requestAnimationFrame(loop);
+}
+
+function restartFull(){
+  document.getElementById('complete-screen').classList.remove('show');
+  document.getElementById('transition-overlay').classList.remove('show');
+  document.getElementById('hud').classList.remove('visible');
+  document.getElementById('harmonic-ring').classList.remove('visible');
+  stopAllOscillators();
+  if(audioCtx){ audioCtx.close(); audioCtx=null; }
+  document.getElementById('title-screen').style.display='flex';
+  setTimeout(()=>document.getElementById('title-screen').classList.remove('fade-out'),50);
+  zoom=0.0000008; frame=0; totalFrames=0; running=false; paused=false;
+  particles.length=0; activeOscillators=[];
+}
+</script>
+</body>
+</html>
