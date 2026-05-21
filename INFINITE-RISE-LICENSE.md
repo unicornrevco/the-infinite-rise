@@ -90,6 +90,11 @@ THIS SOFTWARE AND EXPERIENCE IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND. T
 
 To obtain a commercial license or discuss usage rights, contact the IP holder through the repository associated with this project.
 
+## SEPARATE IP NOTICE
+AudioPrint Pro Studio is a separate and independent 
+intellectual property. Any demonstration using The 
+Infinite Rise does not constitute a merger of the two 
+properties unless explicitly licensed in writing.
 ---
 
 *© 2026 The Infinite Rise. All rights reserved.*  
