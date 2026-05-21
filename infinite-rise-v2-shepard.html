@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>The Infinite Rise — Version 2 | Shepard Tone Edition</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@300;400&family=Cinzel:wght@300;400;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap');
+
+:root {
+  --gold: #d4a94a; --gold-light: #f5d07a; --gold-pale: #fdf3d8;
+  --white: #fffef8; --deep: #03050a; --glow: rgba(212,169,74,0.4);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html,body { width:100%; height:100%; overflow:hidden; background:var(--deep); }
+body { font-family:'Cinzel',serif; color:var(--white); }
+
+#gl { position:fixed; inset:0; z-index:1; display:block; width:100%; height:100%; }
+#particle-cv { position:fixed; inset:0; z-index:4; pointer-events:none; }
+#vignette {
+  position:fixed; inset:0; z-index:5; pointer-events:none;
+  background: radial-gradient(ellipse 75% 75% at 50% 50%, transparent 25%, rgba(3,5,10,0.55) 75%, rgba(3,5,10,0.93) 100%);
+}
+#grain { position:fixed; inset:0; z-index:6; pointer-events:none; opacity:0.03;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* VERSION 2 BADGE */
+#v2-badge {
+  position:fixed; top:0; left:0; right:0; z-index:50;
+  background: linear-gradient(90deg, rgba(212,169,74,0.15), rgba(212,169,74,0.25), rgba(212,169,74,0.15));
+  border-bottom: 1px solid rgba(212,169,74,0.3);
+  padding:6px; text-align:center;
+  font-size:0.55rem; letter-spacing:0.4em; color:var(--gold-light);
+  text-transform:uppercase; pointer-events:none;
+}
+
+/* TITLE SCREEN */
+#title {
+  position:fixed; inset:0; z-index:30;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  background:radial-gradient(ellipse at 50% 55%, rgba(18,12,4,0.96), rgba(3,5,10,0.99));
+  transition:opacity 2.5s ease;
+}
+#title.out { opacity:0; pointer-events:none; }
+
+.t-badge { font-family:'Cormorant Garamond',serif; font-style:italic;
+  font-size:clamp(0.65rem,1.5vw,0.85rem); letter-spacing:0.55em;
+  color:rgba(212,169,74,0.45); text-transform:uppercase;
+  margin-bottom:10px; animation:riseIn 1.8s ease both; }
+.t-main { font-family:'Cinzel Decorative',serif; font-weight:300;
+  font-size:clamp(2.5rem,7vw,5.5rem); letter-spacing:0.1em;
+  text-align:center; line-height:1.05;
+  background:linear-gradient(162deg,#fff9e6 0%,#f5d07a 30%,#d4a94a 60%,#7a5115 100%);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+  filter:drop-shadow(0 0 60px rgba(212,169,74,0.45));
+  animation:riseIn 1.8s 0.25s ease both; }
+.t-v2 { display:inline-block; padding:5px 18px;
+  border:1px solid rgba(212,169,74,0.5); color:var(--gold-light);
+  font-size:0.7rem; letter-spacing:0.35em; text-transform:uppercase;
+  margin:10px 0 6px; animation:riseIn 1.8s 0.4s ease both;
+  background:rgba(212,169,74,0.07); }
+.t-tag { font-family:'Cormorant Garamond',serif; font-style:italic;
+  font-size:clamp(0.9rem,2vw,1.35rem); letter-spacing:0.2em;
+  color:rgba(245,208,122,0.55); margin-bottom:6px;
+  animation:riseIn 1.8s 0.5s ease both; }
+.t-shepard { font-size:0.6rem; letter-spacing:0.3em; color:rgba(212,169,74,0.4);
+  text-transform:uppercase; margin-bottom:20px;
+  animation:riseIn 1.8s 0.65s ease both; }
+.t-divider { width:160px; height:1px;
+  background:linear-gradient(90deg,transparent,rgba(212,169,74,0.6),transparent);
+  margin:16px auto; animation:riseIn 1.8s 0.75s ease both; }
+
+/* SHEPARD EXPLANATION BOX */
+.shepard-box {
+  max-width:500px; width:90%; padding:16px 20px;
+  border:1px solid rgba(212,169,74,0.18);
+  background:rgba(212,169,74,0.04);
+  margin-bottom:22px;
+  animation:riseIn 1.8s 0.85s ease both;
+}
+.shepard-box h4 { font-size:0.65rem; letter-spacing:0.3em; color:var(--gold);
+  text-transform:uppercase; margin-bottom:8px; }
+.shepard-box p { font-family:'Cormorant Garamond',serif; font-style:italic;
+  font-size:0.9rem; color:rgba(245,208,122,0.65); line-height:1.6; }
+
+.sel-label { font-size:0.52rem; letter-spacing:0.4em; color:rgba(212,169,74,0.3);
+  text-transform:uppercase; margin-bottom:9px; text-align:center;
+  animation:riseIn 1.8s 1s ease both; }
+.sound-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:9px;
+  max-width:560px; width:90%; margin-bottom:18px;
+  animation:riseIn 1.8s 1.1s ease both; }
+.snd { padding:11px 6px; background:rgba(212,169,74,0.03);
+  border:1px solid rgba(212,169,74,0.14); color:rgba(245,208,122,0.5);
+  font-family:'Cinzel',serif; font-size:clamp(0.52rem,1.1vw,0.65rem);
+  letter-spacing:0.12em; text-transform:uppercase;
+  cursor:pointer; transition:all 0.3s; text-align:center; }
+.snd:hover { border-color:rgba(212,169,74,0.45); color:rgba(245,208,122,0.85); }
+.snd.on { border-color:var(--gold); color:var(--gold-light); background:rgba(212,169,74,0.07);
+  box-shadow:0 0 16px rgba(212,169,74,0.12); }
+.snd .ico { display:block; font-size:1.2rem; margin-bottom:3px; }
+
+.frac-row { display:flex; gap:8px; flex-wrap:wrap; justify-content:center;
+  max-width:560px; width:90%; margin-bottom:26px;
+  animation:riseIn 1.8s 1.2s ease both; }
+.fb { padding:7px 16px; background:rgba(212,169,74,0.02);
+  border:1px solid rgba(212,169,74,0.12); color:rgba(245,208,122,0.45);
+  font-family:'Cinzel',serif; font-size:0.57rem;
+  letter-spacing:0.18em; text-transform:uppercase;
+  cursor:pointer; transition:all 0.3s; }
+.fb:hover { border-color:rgba(212,169,74,0.4); color:rgba(245,208,122,0.8); }
+.fb.on { border-color:var(--gold); color:var(--gold-light); background:rgba(212,169,74,0.06); }
+
+.begin { padding:16px 62px; background:transparent;
+  border:1px solid rgba(212,169,74,0.35); color:var(--gold-light);
+  font-family:'Cinzel',serif; font-size:clamp(0.7rem,1.4vw,0.88rem);
+  letter-spacing:0.45em; text-transform:uppercase;
+  cursor:pointer; transition:all 0.45s; position:relative; overflow:hidden;
+  animation:riseIn 1.8s 1.4s ease both; }
+.begin:hover { border-color:var(--gold); box-shadow:0 0 50px rgba(212,169,74,0.18); }
+
+/* HUD */
+#hud { position:fixed; inset:0; z-index:10; pointer-events:none; opacity:0; transition:opacity 1.8s; }
+#hud.on { opacity:1; }
+
+.hud-top { position:absolute; top:0; left:0; right:0; padding:28px 44px 18px;
+  display:flex; align-items:flex-start; justify-content:space-between;
+  background:linear-gradient(180deg,rgba(3,5,10,0.85) 0%,transparent 100%); }
+.h-title { font-family:'Cinzel Decorative',serif; font-weight:300;
+  font-size:clamp(0.65rem,1.4vw,0.9rem); letter-spacing:0.35em;
+  background:linear-gradient(90deg,var(--gold-pale),var(--gold));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.h-v2tag { font-size:0.48rem; letter-spacing:0.3em; color:rgba(212,169,74,0.5);
+  text-transform:uppercase; margin-top:3px; }
+.h-voice { font-family:'Cormorant Garamond',serif; font-style:italic;
+  font-size:clamp(0.75rem,1.4vw,1rem); color:rgba(212,169,74,0.6); letter-spacing:0.12em;
+  text-align:center; }
+.h-shepard-ind { font-size:0.48rem; letter-spacing:0.25em; color:rgba(212,169,74,0.4);
+  text-align:center; margin-top:3px; }
+.h-time { font-size:0.58rem; letter-spacing:0.22em; color:rgba(212,169,74,0.38); }
+
+/* Shepard wave visualizer */
+#shepard-vis {
+  position:fixed; bottom:160px; right:20px; z-index:11;
+  width:120px; height:50px; opacity:0; transition:opacity 1s;
+}
+#shepard-vis.on { opacity:0.6; }
+
+.hud-bot { position:absolute; bottom:0; left:0; right:0; padding:16px 44px 28px;
+  background:linear-gradient(0deg,rgba(3,5,10,0.88) 0%,transparent 100%); }
+.stats { display:flex; gap:24px; margin-bottom:12px; }
+.stat { text-align:center; }
+.sl { font-size:0.48rem; letter-spacing:0.28em; color:rgba(212,169,74,0.32); text-transform:uppercase; margin-bottom:2px; }
+.sv { font-family:'Cormorant Garamond',serif; font-size:1rem; color:rgba(245,208,122,0.78); }
+
+.prog-track { height:2px; background:rgba(212,169,74,0.09); border-radius:2px; position:relative; }
+.prog-fill { height:100%; border-radius:2px; width:0%;
+  background:linear-gradient(90deg,rgba(212,169,74,0.35),var(--gold-light));
+  box-shadow:0 0 10px var(--glow); transition:width 0.5s linear; position:relative; }
+.prog-fill::after { content:''; position:absolute; right:-4px; top:-3px;
+  width:8px; height:8px; border-radius:50%;
+  background:var(--gold-light); box-shadow:0 0 14px rgba(245,208,122,0.9); }
+
+/* Shepard indicator bar */
+.shepard-bar { height:1px; background:rgba(212,169,74,0.06); border-radius:1px;
+  margin-top:6px; position:relative; overflow:hidden; }
+.shepard-scroll { position:absolute; top:0; left:-100%; width:100%; height:100%;
+  background:linear-gradient(90deg,transparent,rgba(212,169,74,0.4),rgba(245,208,122,0.8),rgba(212,169,74,0.4),transparent);
+  animation:shepardScroll 3s linear infinite; }
+@keyframes shepardScroll { 0%{left:-100%} 100%{left:100%} }
+
+.ctrl-row { display:flex; gap:9px; align-items:center; margin-top:12px; pointer-events:all; flex-wrap:wrap; }
+.cb { padding:7px 18px; background:transparent;
+  border:1px solid rgba(212,169,74,0.18); color:rgba(212,169,74,0.48);
+  font-family:'Cinzel',serif; font-size:0.52rem; letter-spacing:0.22em; text-transform:uppercase;
+  cursor:pointer; transition:all 0.28s; }
+.cb:hover { border-color:rgba(212,169,74,0.6); color:var(--gold-light); }
+.cb.on { border-color:var(--gold); color:var(--gold-light); background:rgba(212,169,74,0.06); }
+.vsep { width:1px; height:24px; background:rgba(212,169,74,0.12); margin:0 4px; }
+
+.hud-right { position:absolute; right:28px; top:50%; transform:translateY(-50%);
+  display:flex; flex-direction:column; align-items:center; gap:7px; }
+.alt-wrap { position:relative; width:2px; height:200px; }
+.alt-track { width:100%; height:100%; background:rgba(212,169,74,0.07); border-radius:2px; }
+.alt-fill { width:100%; height:0%; border-radius:2px;
+  background:linear-gradient(0deg,rgba(212,169,74,0.25),var(--gold-light));
+  position:absolute; bottom:0; box-shadow:0 0 7px var(--glow); transition:height 0.5s linear; }
+.alt-label { font-size:0.43rem; letter-spacing:0.28em; color:rgba(212,169,74,0.28);
+  text-transform:uppercase; writing-mode:vertical-rl; }
+
+#done { position:fixed; inset:0; z-index:60;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  background:radial-gradient(ellipse at 50% 50%,rgba(253,243,216,0.97),rgba(245,208,122,0.95));
+  opacity:0; pointer-events:none; transition:opacity 2s 1.5s; }
+#done.on { opacity:1; pointer-events:all; }
+.done-title { font-family:'Cinzel Decorative',serif; font-weight:300;
+  font-size:clamp(2rem,5vw,4rem); color:rgba(70,42,8,0.9);
+  letter-spacing:0.2em; margin-bottom:12px; }
+.done-sub { font-family:'Cormorant Garamond',serif; font-style:italic;
+  font-size:clamp(1rem,2vw,1.35rem); color:rgba(110,70,15,0.65);
+  letter-spacing:0.2em; margin-bottom:38px; }
+.done-btn { padding:13px 48px; background:transparent;
+  border:1px solid rgba(110,70,15,0.35); color:rgba(90,55,10,0.8);
+  font-family:'Cinzel',serif; font-size:0.72rem; letter-spacing:0.35em; text-transform:uppercase;
+  cursor:pointer; transition:all 0.3s; }
+.done-btn:hover { border-color:rgba(90,55,10,0.75); color:rgba(60,35,5,1); }
+
+#fade { position:fixed; inset:0; z-index:55; background:var(--gold-pale);
+  opacity:0; pointer-events:none; transition:opacity 3.5s; }
+#fade.on { opacity:1; }
+
+@keyframes riseIn { from{opacity:0;transform:translateY(22px)} to{opacity:1;transform:translateY(0)} }
+</style>
+</head>
+<body>
+
+<div id="v2-badge">✦ Version 2 — Shepard Tone Edition — Endless Ascending Audio Illusion ✦</div>
+<canvas id="gl"></canvas>
+<canvas id="particle-cv"></canvas>
+<div id="vignette"></div>
+<div id="grain"></div>
+<div id="fade"></div>
+
+<!-- TITLE -->
+<div id="title">
+  <div class="t-badge">A Fractal Sound Experience</div>
+  <div class="t-main">The Infinite Rise</div>
+  <div class="t-v2">Version 2 — Shepard Tone Edition</div>
+  <div class="t-tag">where the ascent never ends</div>
+  <div class="t-shepard">✦ Endless Rising Audio Illusion · WebGL · GPU Rendered ✦</div>
+  <div class="t-divider"></div>
+
+  <div class="shepard-box">
+    <h4>What is the Shepard Tone?</h4>
+    <p>A Shepard Tone is an acoustic illusion — multiple octaves of the same note layered together, with higher octaves fading out as lower ones fade in. To the brain, the pitch sounds like it rises <em>forever</em> with no ceiling and no resolution. This version pairs that endless rising sensation with the ascending fractal for a truly infinite experience.</p>
+  </div>
+
+  <div class="sel-label">Sound Voice</div>
+  <div class="sound-grid">
+    <button class="snd on" data-v="shepard_choir"   onclick="selV('shepard_choir',this)"><span class="ico">✦∞</span>Endless Choir</button>
+    <button class="snd"    data-v="shepard_organ"   onclick="selV('shepard_organ',this)"><span class="ico">♜∞</span>Endless Organ</button>
+    <button class="snd"    data-v="shepard_piano"   onclick="selV('shepard_piano',this)"><span class="ico">♪∞</span>Endless Piano</button>
+    <button class="snd"    data-v="shepard_bowls"   onclick="selV('shepard_bowls',this)"><span class="ico">◎∞</span>Endless Bowls</button>
+    <button class="snd"    data-v="shepard_strings" onclick="selV('shepard_strings',this)"><span class="ico">〜∞</span>Endless Strings</button>
+    <button class="snd"    data-v="shepard_synth"   onclick="selV('shepard_synth',this)"><span class="ico">◈∞</span>Endless Synth</button>
+  </div>
+
+  <div class="sel-label">Fractal Type</div>
+  <div class="frac-row">
+    <button class="fb on"  data-f="mandelbrot"  onclick="selF('mandelbrot',this)">Mandelbrot</button>
+    <button class="fb"     data-f="burningship" onclick="selF('burningship',this)">Burning Ship</button>
+    <button class="fb"     data-f="feather"     onclick="selF('feather',this)">Feather</button>
+    <button class="fb"     data-f="tricorn"     onclick="selF('tricorn',this)">Tricorn</button>
+    <button class="fb"     data-f="phoenix"     onclick="selF('phoenix',this)">Phoenix</button>
+  </div>
+
+  <button class="begin" onclick="start()">Begin the Endless Ascent</button>
+</div>
+
+<!-- HUD -->
+<div id="hud">
+  <div class="hud-top">
+    <div>
+      <div class="h-title">The Infinite Rise</div>
+      <div class="h-v2tag">Version 2 — Shepard Tone</div>
+    </div>
+    <div>
+      <div class="h-voice" id="hv-label">Endless Choir</div>
+      <div class="h-shepard-ind">∞ Audio rises forever · No ceiling</div>
+    </div>
+    <div class="h-time" id="h-time">0:00</div>
+  </div>
+
+  <div class="hud-right">
+    <div class="alt-label">Ascent</div>
+    <div class="alt-wrap">
+      <div class="alt-track"></div>
+      <div class="alt-fill" id="alt-fill"></div>
+    </div>
+    <div class="alt-label" id="pct">0%</div>
+  </div>
+
+  <div class="hud-bot">
+    <div class="stats">
+      <div class="stat"><div class="sl">Zoom</div><div class="sv" id="s-zoom">—</div></div>
+      <div class="stat"><div class="sl">Shepard Layer</div><div class="sv" id="s-layer">—</div></div>
+      <div class="stat"><div class="sl">Palette</div><div class="sv" id="s-pal">Dawn</div></div>
+      <div class="stat"><div class="sl">Iterations</div><div class="sv" id="s-iter">100</div></div>
+      <div class="stat"><div class="sl">Ascent</div><div class="sv" id="s-pct">0%</div></div>
+    </div>
+    <div class="prog-track"><div class="prog-fill" id="prog"></div></div>
+    <div class="shepard-bar"><div class="shepard-scroll"></div></div>
+    <div class="ctrl-row">
+      <button class="cb" id="pb" onclick="togglePause()">Pause</button>
+      <button class="cb" onclick="doRestart()">Restart</button>
+      <button class="cb" id="spd" onclick="cycleSpd()">Speed 1×</button>
+      <div class="vsep"></div>
+      <button class="cb on"  data-v="shepard_choir"   onclick="liveV('shepard_choir',this)">Choir</button>
+      <button class="cb"     data-v="shepard_organ"   onclick="liveV('shepard_organ',this)">Organ</button>
+      <button class="cb"     data-v="shepard_piano"   onclick="liveV('shepard_piano',this)">Piano</button>
+      <button class="cb"     data-v="shepard_bowls"   onclick="liveV('shepard_bowls',this)">Bowls</button>
+      <button class="cb"     data-v="shepard_strings" onclick="liveV('shepard_strings',this)">Strings</button>
+      <button class="cb"     data-v="shepard_synth"   onclick="liveV('shepard_synth',this)">Synth</button>
+    </div>
+  </div>
+</div>
+
+<!-- Shepard wave canvas -->
+<canvas id="shepard-vis"></canvas>
+
+<div id="done">
+  <div class="done-title">The Ascent Continues</div>
+  <div class="done-sub">the tone rises still — beyond what can be seen</div>
+  <button class="done-btn" onclick="fullRestart()">Begin Again</button>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════
+//  THE INFINITE RISE V2 — Shepard Tone Engine
+// ═══════════════════════════════════════════════════
+
+const glCanvas = document.getElementById('gl');
+const pCanvas  = document.getElementById('particle-cv');
+const sCanvas  = document.getElementById('shepard-vis');
+const pCtx     = pCanvas.getContext('2d');
+const sCtx     = sCanvas.getContext('2d');
+let gl, prog, uLocs;
+let W, H;
+
+let running=false, paused=false;
+let zoom=0.0000009, zoomSpd=1.0022, spdMult=1;
+let frame=0, totalF=0, elapsed=0, lastTS=0;
+const MAXF=6000;
+let curVoice='shepard_choir', curFrac='mandelbrot';
+let selVoice='shepard_choir', selFrac='mandelbrot';
+
+let actx=null, mGain=null, rev=null;
+let shepardOscs=[];  // Shepard tone layers
+let voiceOscs=[];    // Voice character layers
+let curProg=0;
+
+const FRAC_CFG = {
+  mandelbrot:  { cx:-0.74529, cy: 0.11300, label:'Mandelbrot',  pal:'Dawn'    },
+  burningship: { cx:-1.75490, cy:-0.02810, label:'Burning Ship', pal:'Blaze'   },
+  feather:     { cx:-0.62510, cy: 0.42390, label:'Feather',      pal:'Aurora'  },
+  tricorn:     { cx:-0.08060, cy: 0.66020, label:'Tricorn',      pal:'Dusk'    },
+  phoenix:     { cx: 0.56670, cy: 0.00000, label:'Phoenix',      pal:'Emerald' },
+};
+
+const VOICE_NAMES={
+  shepard_choir:'Endless Choir', shepard_organ:'Endless Organ',
+  shepard_piano:'Endless Piano', shepard_bowls:'Endless Bowls',
+  shepard_strings:'Endless Strings', shepard_synth:'Endless Synth'
+};
+
+// Shepard tone: C major chord, 5 octaves
+// Base frequencies for C: 32.7, 65.4, 130.8, 261.6, 523.2, 1046.5
+const SHEPARD_BASE = 130.81;
+const OCTAVES = [-2, -1, 0, 1, 2, 3]; // relative octaves
+// Chord ratios (C maj9): C, E, G, Bb, D
+const CHORD_RATIOS = [1, 1.25, 1.5, 1.875, 2.25];
+
+// ── WebGL SETUP ─────────────────────────────────
+const VERT = `attribute vec2 aPos; void main(){ gl_Position=vec4(aPos,0,1); }`;
+const FRAG = `
+precision highp float;
+uniform vec2 uRes; uniform float uZoom; uniform vec2 uCenter;
+uniform float uProgress; uniform int uFrac; uniform int uMaxIter;
+
+vec3 hsl2rgb(float h,float s,float l){
+  float c=(1.0-abs(2.0*l-1.0))*s, x=c*(1.0-abs(mod(h*6.0,2.0)-1.0)), m=l-c*0.5;
+  vec3 rgb;
+  if(h<1.0/6.0)rgb=vec3(c,x,0.); else if(h<2.0/6.0)rgb=vec3(x,c,0.);
+  else if(h<3.0/6.0)rgb=vec3(0.,c,x); else if(h<4.0/6.0)rgb=vec3(0.,x,c);
+  else if(h<5.0/6.0)rgb=vec3(x,0.,c); else rgb=vec3(c,0.,x);
+  return rgb+m;
+}
+vec3 palette(float t,float p,int ft){
+  float n=mod(t,64.0)/64.0, w=0.1+p*0.7;
+  float hBase,hShift;
+  if(ft==1){hBase=0.66;hShift=0.15;}
+  else if(ft==2){hBase=0.03;hShift=0.10;}
+  else if(ft==3){hBase=0.50;hShift=0.15;}
+  else if(ft==4){hBase=0.75;hShift=0.12;}
+  else{hBase=0.36;hShift=0.15;}
+  float h=hBase-n*hShift-p*0.25, s=0.7+n*0.3, l=clamp(0.08+n*0.72+w*0.18,0.0,1.0);
+  return hsl2rgb(mod(h+1.0,1.0),s,l);
+}
+float mandel(vec2 c,int m){vec2 z=vec2(0);int i=0;
+  for(int n=0;n<1024;n++){if(n>=m||dot(z,z)>4.)break;z=vec2(z.x*z.x-z.y*z.y+c.x,2.*z.x*z.y+c.y);i=n;}
+  if(i==m-1&&dot(z,z)<=4.)return -1.;
+  return float(i+1)-log(log(dot(z,z))*.5/log(2.))/log(2.);}
+float burn(vec2 c,int m){vec2 z=vec2(0);int i=0;
+  for(int n=0;n<1024;n++){if(n>=m||dot(z,z)>4.)break;z=vec2(z.x*z.x-z.y*z.y+c.x,abs(2.*z.x*z.y)+c.y);i=n;}
+  if(i==m-1&&dot(z,z)<=4.)return -1.;
+  return float(i+1)-log(log(dot(z,z))*.5/log(2.))/log(2.);}
+float feat(vec2 c,int m){vec2 z=vec2(0);int i=0;
+  for(int n=0;n<1024;n++){if(n>=m||dot(z,z)>16.)break;
+    float zx2=z.x*z.x,zy2=z.y*z.y;vec2 z3=vec2(z.x*(zx2-3.*zy2),z.y*(3.*zx2-zy2));
+    float ml=max(length(z3),0.0001);z=z3/ml+c;i=n;}
+  if(i==m-1)return -1.;return float(i);}
+float tri(vec2 c,int m){vec2 z=vec2(0);int i=0;
+  for(int n=0;n<1024;n++){if(n>=m||dot(z,z)>4.)break;z=vec2(z.x*z.x-z.y*z.y+c.x,-2.*z.x*z.y+c.y);i=n;}
+  if(i==m-1&&dot(z,z)<=4.)return -1.;
+  return float(i+1)-log(log(dot(z,z))*.5/log(2.))/log(2.);}
+float phx(vec2 c,int m){vec2 z=vec2(0),pz=vec2(0);int i=0;
+  for(int n=0;n<1024;n++){if(n>=m||dot(z,z)>4.)break;
+    vec2 nz=vec2(z.x*z.x-z.y*z.y+c.x+.5667*pz.x,2.*z.x*z.y+c.y+.5*pz.y);pz=z;z=nz;i=n;}
+  if(i==m-1&&dot(z,z)<=4.)return -1.;
+  return float(i+1)-log(log(dot(z,z))*.5/log(2.))/log(2.);}
+void main(){
+  vec2 uv=gl_FragCoord.xy;
+  float scale=4.0/(uZoom*min(uRes.x,uRes.y));
+  vec2 c=uCenter+(uv-uRes*.5)*scale; c.y=-c.y;
+  float t;
+  if(uFrac==1)t=mandel(c,uMaxIter); else if(uFrac==2)t=burn(c,uMaxIter);
+  else if(uFrac==3)t=feat(c,uMaxIter); else if(uFrac==4)t=tri(c,uMaxIter);
+  else t=phx(c,uMaxIter);
+  if(t<0.){float in=0.015+uProgress*0.03;gl_FragColor=vec4(in*.3,in*.2,in*.05,1.);}
+  else{vec3 col=palette(t,uProgress,uFrac);gl_FragColor=vec4(col,1.);}
+}`;
+
+function initGL(){
+  gl=glCanvas.getContext('webgl',{antialias:true,depth:false,alpha:false});
+  if(!gl){alert('WebGL not supported — use Chrome');return false;}
+  const vs=gl.createShader(gl.VERTEX_SHADER); gl.shaderSource(vs,VERT); gl.compileShader(vs);
+  const fs=gl.createShader(gl.FRAGMENT_SHADER); gl.shaderSource(fs,FRAG); gl.compileShader(fs);
+  prog=gl.createProgram(); gl.attachShader(prog,vs); gl.attachShader(prog,fs); gl.linkProgram(prog);
+  gl.useProgram(prog);
+  const buf=gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER,buf);
+  gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
+  const ap=gl.getAttribLocation(prog,'aPos');
+  gl.enableVertexAttribArray(ap); gl.vertexAttribPointer(ap,2,gl.FLOAT,false,0,0);
+  uLocs={res:gl.getUniformLocation(prog,'uRes'),zoom:gl.getUniformLocation(prog,'uZoom'),
+    center:gl.getUniformLocation(prog,'uCenter'),prog:gl.getUniformLocation(prog,'uProgress'),
+    frac:gl.getUniformLocation(prog,'uFrac'),maxIter:gl.getUniformLocation(prog,'uMaxIter')};
+  return true;
+}
+const FRAC_ID={mandelbrot:1,burningship:2,feather:3,tricorn:4,phoenix:5};
+
+function renderGL(p){
+  gl.viewport(0,0,W,H);
+  const cfg=FRAC_CFG[curFrac];
+  gl.uniform2f(uLocs.res,W,H); gl.uniform1f(uLocs.zoom,zoom);
+  gl.uniform2f(uLocs.center,cfg.cx,cfg.cy); gl.uniform1f(uLocs.prog,p);
+  gl.uniform1i(uLocs.frac,FRAC_ID[curFrac]);
+  gl.uniform1i(uLocs.maxIter,~~(100+p*150));
+  gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
+}
+
+function resize(){
+  W=glCanvas.width=pCanvas.width=window.innerWidth;
+  H=glCanvas.height=pCanvas.height=window.innerHeight;
+  sCanvas.width=140; sCanvas.height=55;
+}
+window.addEventListener('resize',resize); resize();
+
+// ── PARTICLES ────────────────────────────────────
+const particles=[];
+function spawnP(p){
+  if(Math.random()>0.18)return;
+  particles.push({x:Math.random()*W,y:H+8,vx:(Math.random()-.5)*.6,
+    vy:-(0.4+Math.random()*1.6*(1+p*2.5)),size:Math.random()*2.8+0.4,
+    life:1,decay:0.0025+Math.random()*.004,hue:38+Math.random()*22});
+}
+function drawP(){
+  pCtx.clearRect(0,0,W,H);
+  for(let i=particles.length-1;i>=0;i--){
+    const p=particles[i]; p.x+=p.vx; p.y+=p.vy; p.life-=p.decay;
+    if(p.life<=0||p.y<-10){particles.splice(i,1);continue;}
+    pCtx.beginPath(); pCtx.arc(p.x,p.y,p.size,0,Math.PI*2);
+    pCtx.fillStyle=`hsla(${p.hue},85%,78%,${p.life*.55})`; pCtx.fill();
+  }
+}
+
+// ── SHEPARD WAVE VISUALIZER ─────────────────────
+function drawShepardVis(progress){
+  sCtx.clearRect(0,0,140,55);
+  const layers=6, t=Date.now()/1000;
+  for(let i=0;i<layers;i++){
+    // Each layer: sine wave at different frequency, amplitude follows bell curve
+    const phase=(i/layers)*Math.PI*2;
+    // Position in cycle: each layer continuously scrolls
+    const cycle=((t*0.08+i/layers)%1); // 0..1
+    // Bell curve amplitude: peaks at cycle=0.5
+    const amp=Math.sin(cycle*Math.PI)*0.85;
+    sCtx.beginPath();
+    for(let x=0;x<140;x++){
+      const y=27-Math.sin((x/140)*Math.PI*4+t*2+phase)*amp*18;
+      x===0?sCtx.moveTo(x,y):sCtx.lineTo(x,y);
+    }
+    sCtx.strokeStyle=`hsla(45,80%,${50+i*8}%,${amp*0.7+0.1})`;
+    sCtx.lineWidth=1.5; sCtx.stroke();
+  }
+}
+
+// ── AUDIO — SHEPARD TONE ENGINE ──────────────────
+async function initAudio(){
+  actx=new(window.AudioContext||window.webkitAudioContext)();
+  mGain=actx.createGain();
+  mGain.gain.setValueAtTime(0.001,actx.currentTime);
+  mGain.gain.linearRampToValueAtTime(0.38,actx.currentTime+5);
+  rev=await buildRev(4.5);
+  const wet=actx.createGain(); wet.gain.value=0.65;
+  const dry=actx.createGain(); dry.gain.value=0.35;
+  mGain.connect(dry); dry.connect(actx.destination);
+  mGain.connect(rev); rev.connect(wet); wet.connect(actx.destination);
+  buildShepardVoice(curVoice,0);
+}
+
+async function buildRev(secs){
+  const cv=actx.createConvolver(), r=actx.sampleRate, len=r*secs;
+  const buf=actx.createBuffer(2,len,r);
+  for(let c=0;c<2;c++){const ch=buf.getChannelData(c);
+    for(let i=0;i<len;i++)ch[i]=(Math.random()*2-1)*Math.pow(1-i/len,1.8);}
+  cv.buffer=buf; return cv;
+}
+
+function stopAll(){
+  [...shepardOscs,...voiceOscs].forEach(o=>{
+    try{o.gain.gain.linearRampToValueAtTime(0,actx.currentTime+0.8);
+      setTimeout(()=>{try{o.osc.stop();}catch(e){}},900);}catch(e){}
+  });
+  shepardOscs=[]; voiceOscs=[];
+}
+
+// ── THE CORE SHEPARD TONE ────────────────────────
+// Creates a continuously rising tone that never "arrives"
+// by cycling multiple octaves with fading amplitude envelope
+function buildShepardCore(oscType='sine', filterFn=null, detune=0){
+  const cycleTime=8; // seconds per complete cycle per octave
+  CHORD_RATIOS.forEach((ratio,ri)=>{
+    OCTAVES.forEach((oct,oi)=>{
+      const baseFreq=SHEPARD_BASE*ratio*Math.pow(2,oct);
+      if(baseFreq<20||baseFreq>18000)return;
+      const osc=actx.createOscillator();
+      const gn=actx.createGain();
+      const lfo=actx.createOscillator(); // amplitude envelope LFO
+      const lg=actx.createGain();
+
+      osc.type=oscType;
+      osc.frequency.value=baseFreq*(1+detune*(Math.random()-.5));
+
+      // The Shepard magic: each octave gets a different phase in the cycle
+      // This creates the illusion of endless rise
+      // LFO controls amplitude in a bell curve that peaks then repeats
+      const phaseOffset=(oi/OCTAVES.length)*cycleTime;
+
+      // Use periodic gain scheduling instead of LFO for precision
+      const now=actx.currentTime;
+      const totalCycles=Math.ceil(MAXF/60/cycleTime)+2;
+
+      // Schedule gain envelope: bell curve per cycle
+      gn.gain.setValueAtTime(0,now);
+      for(let cyc=0;cyc<totalCycles;cyc++){
+        const start=now+phaseOffset+cyc*cycleTime;
+        const peak=start+cycleTime*0.5;
+        const end=start+cycleTime;
+        // Fade in
+        gn.gain.linearRampToValueAtTime(0,start);
+        gn.gain.linearRampToValueAtTime(0.12/(CHORD_RATIOS.length*OCTAVES.length),peak);
+        // Fade out
+        gn.gain.linearRampToValueAtTime(0,end);
+      }
+
+      // Frequency also rises continuously within each octave cycle
+      // Ramp up one octave per cycleTime, then reset
+      for(let cyc=0;cyc<=totalCycles;cyc++){
+        const t=now+phaseOffset+cyc*cycleTime;
+        osc.frequency.setValueAtTime(baseFreq,t);
+        osc.frequency.exponentialRampToValueAtTime(baseFreq*2,t+cycleTime);
+      }
+
+      let node=osc;
+      if(filterFn){const f=filterFn(baseFreq); osc.connect(f); node=f;}
+      node.connect(gn); gn.connect(mGain);
+      osc.start(now);
+      shepardOscs.push({osc,gain:gn,baseFreq,oct,ratio});
+    });
+  });
+}
+
+// Voice character layers (timbre on top of Shepard)
+function addVoiceCharacter(voice){
+  const type={
+    shepard_choir:'sine', shepard_organ:'sawtooth',
+    shepard_piano:'triangle', shepard_bowls:'sine',
+    shepard_strings:'sawtooth', shepard_synth:'square'
+  }[voice];
+
+  const filterFn = (voice==='shepard_organ'||voice==='shepard_strings'||voice==='shepard_synth')
+    ? (freq)=>{const f=actx.createBiquadFilter();f.type='lowpass';f.frequency.value=freq*4;f.Q.value=voice==='shepard_synth'?8:2;return f;}
+    : null;
+
+  // Vibrato for choir
+  if(voice==='shepard_choir'){
+    CHORD_RATIOS.slice(0,3).forEach((ratio,ri)=>{
+      const osc=actx.createOscillator(), gn=actx.createGain();
+      const vib=actx.createOscillator(), vg=actx.createGain();
+      osc.type='sine'; osc.frequency.value=SHEPARD_BASE*ratio*(1+(Math.random()-.5)*.004);
+      vib.frequency.value=4.5; vg.gain.value=SHEPARD_BASE*ratio*.003;
+      vib.connect(vg); vg.connect(osc.frequency);
+      gn.gain.setValueAtTime(0,actx.currentTime);
+      gn.gain.linearRampToValueAtTime(0.04,actx.currentTime+3);
+      osc.connect(gn); gn.connect(mGain); osc.start(); vib.start();
+      voiceOscs.push({osc,gain:gn,vib,baseFreq:SHEPARD_BASE*ratio});
+    });
+  }
+}
+
+function buildShepardVoice(voice, prog){
+  stopAll();
+  const typeMap={
+    shepard_choir:'sine', shepard_organ:'sawtooth',
+    shepard_piano:'triangle', shepard_bowls:'sine',
+    shepard_strings:'sawtooth', shepard_synth:'square'
+  };
+  const detuneMap={
+    shepard_choir:0.003, shepard_organ:0.002,
+    shepard_piano:0, shepard_bowls:0.008,
+    shepard_strings:0.001, shepard_synth:0
+  };
+  const filterMap={
+    shepard_organ:(f)=>{const flt=actx.createBiquadFilter();flt.type='lowpass';flt.frequency.value=f*3;return flt;},
+    shepard_strings:(f)=>{const flt=actx.createBiquadFilter();flt.type='lowpass';flt.frequency.value=f*2.5;flt.Q.value=1.5;return flt;},
+    shepard_synth:(f)=>{const flt=actx.createBiquadFilter();flt.type='lowpass';flt.frequency.value=400;flt.Q.value=6;return flt;},
+  };
+  buildShepardCore(typeMap[voice], filterMap[voice]||null, detuneMap[voice]);
+  addVoiceCharacter(voice);
+}
+
+// ── SHEPARD LAYER LABEL ──────────────────────────
+const LAYER_LABELS=['C²','C³','C⁴','C⁵','C⁶','C⁷','∞'];
+
+// ── MAIN LOOP ─────────────────────────────────────
+function loop(ts){
+  if(!running||paused)return;
+  requestAnimationFrame(loop);
+  if(lastTS&&ts){const dt=Math.min((ts-lastTS)/1000,.08);elapsed+=dt*spdMult;}
+  lastTS=ts;
+  const p=Math.min(totalF/MAXF,1.0);
+  renderGL(p);
+  spawnP(p); drawP();
+  if(frame%3===0) drawShepardVis(p);
+  for(let s=0;s<spdMult;s++)zoom*=zoomSpd;
+  if(frame%5===0){
+    const exp=Math.log10(zoom/0.0000009);
+    document.getElementById('s-zoom').textContent=`e${exp.toFixed(1)}`;
+    document.getElementById('s-layer').textContent=LAYER_LABELS[Math.min(~~(p*7),6)];
+    document.getElementById('s-pal').textContent=FRAC_CFG[curFrac].pal;
+    document.getElementById('s-iter').textContent=~~(100+p*150);
+    document.getElementById('s-pct').textContent=~~(p*100)+'%';
+    document.getElementById('pct').textContent=~~(p*100)+'%';
+    const m=~~(elapsed/60),s2=~~(elapsed%60);
+    document.getElementById('h-time').textContent=`${m}:${s2.toString().padStart(2,'0')}`;
+    document.getElementById('prog').style.width=(p*100)+'%';
+    document.getElementById('alt-fill').style.height=(p*100)+'%';
+  }
+  frame++; totalF+=spdMult;
+  if(totalF>=MAXF)finish();
+}
+
+function finish(){
+  running=false;
+  if(mGain)mGain.gain.linearRampToValueAtTime(0,actx.currentTime+6);
+  document.getElementById('fade').classList.add('on');
+  setTimeout(()=>document.getElementById('done').classList.add('on'),2200);
+}
+
+// ── UI ────────────────────────────────────────────
+function selV(v,btn){selVoice=v;document.querySelectorAll('.sound-grid .snd').forEach(b=>b.classList.toggle('on',b.dataset.v===v));}
+function selF(f,btn){selFrac=f;document.querySelectorAll('.frac-row .fb').forEach(b=>b.classList.toggle('on',b.dataset.f===f));}
+
+function start(){
+  if(!initGL())return;
+  curVoice=selVoice; curFrac=selFrac;
+  zoom=0.0000009; frame=0; totalF=0; elapsed=0; lastTS=0;
+  document.getElementById('title').classList.add('out');
+  setTimeout(()=>document.getElementById('title').style.display='none',2600);
+  document.getElementById('hud').classList.add('on');
+  document.getElementById('shepard-vis').classList.add('on');
+  document.getElementById('hv-label').textContent=VOICE_NAMES[curVoice];
+  document.getElementById('s-pal').textContent=FRAC_CFG[curFrac].pal;
+  updateLiveVBtns(curVoice);
+  initAudio().then(()=>{running=true;paused=false;requestAnimationFrame(loop);});
+}
+
+function liveV(v,btn){
+  if(!running)return;
+  curVoice=v;
+  document.getElementById('hv-label').textContent=VOICE_NAMES[v];
+  updateLiveVBtns(v);
+  buildShepardVoice(v,curProg);
+}
+function updateLiveVBtns(v){
+  document.querySelectorAll('.ctrl-row .cb[data-v]').forEach(b=>b.classList.toggle('on',b.dataset.v===v));
+}
+
+const spdLevels=[1,2,4]; let spdIdx=0;
+function cycleSpd(){spdIdx=(spdIdx+1)%spdLevels.length;spdMult=spdLevels[spdIdx];document.getElementById('spd').textContent=`Speed ${spdMult}×`;}
+
+function togglePause(){
+  paused=!paused;
+  document.getElementById('pb').textContent=paused?'Resume':'Pause';
+  if(actx)paused?actx.suspend():actx.resume();
+  if(!paused){lastTS=0;requestAnimationFrame(loop);}
+}
+
+function doRestart(){
+  zoom=0.0000009;frame=0;totalF=0;elapsed=0;lastTS=0;
+  particles.length=0;spdIdx=0;spdMult=1;
+  document.getElementById('spd').textContent='Speed 1×';
+  if(paused){paused=false;document.getElementById('pb').textContent='Pause';}
+  if(actx)actx.resume();
+  buildShepardVoice(curVoice,0);
+  running=true;requestAnimationFrame(loop);
+}
+
+function fullRestart(){
+  document.getElementById('done').classList.remove('on');
+  document.getElementById('fade').classList.remove('on');
+  document.getElementById('hud').classList.remove('on');
+  document.getElementById('shepard-vis').classList.remove('on');
+  stopAll();
+  if(actx){actx.close();actx=null;}
+  document.getElementById('title').style.display='flex';
+  setTimeout(()=>document.getElementById('title').classList.remove('out'),50);
+  zoom=0.0000009;frame=0;totalF=0;running=false;paused=false;particles.length=0;
+}
+</script>
+</body>
+</html>
