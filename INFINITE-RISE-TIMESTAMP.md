@@ -109,6 +109,17 @@ TIMESTAMP.md:  [Generate with: sha256sum TIMESTAMP.md]
 - [ ] Filing a copyright registration with the U.S. Copyright Office (copyright.gov)
 - [ ] Notarized copy of this document
 - [ ] Wayback Machine snapshot of deployed version
+- [ ] ## LEGAL DIFFERENTIATION NOTE
+Added: May 20, 2026
+
+The Infinite Rise and AudioPrint Pro Studio are two 
+distinct intellectual properties under common ownership, 
+each independently documented, timestamped, and licensed.
+
+The Infinite Rise is an original audiovisual art format — 
+the first ascending fractal experience with synchronized 
+rising sonification. It is an independent creative work 
+with no affiliation to any other product, platform, or brand.
 
 ---
 
